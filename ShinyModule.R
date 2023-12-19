@@ -28,7 +28,8 @@ choices_date_range <- list("last day" = 1,
                            "last 60 days" = 60,
                            "last 90 days" = 90,
                            "last 180 days" = 180,
-                           "last year" = 365)
+                           "last year" = 365,
+                           "all time" = 99999)
 default_date_range <- 180
 
 # set limits and default for max distance
@@ -40,9 +41,6 @@ default_max_distance <- 100
 limit_lower_min_duration <- 1
 limit_upper_min_duration <- 240
 default_min_duration <- 24
-
-# set max number of last days to process
-last_n_days <- 365
 
 # set max number of last hours for calculating distance to last location
 max_min_duration_parameter <- 240
@@ -312,9 +310,9 @@ shinyModule <- function(input, output, session, data) {
       # drop duplicated rows
       individual_data <- individual_data[!duplicated(individual_data[c("individuals", "timestamps")]), ]
       
-      # extract max and min date
+      # extract min and max date
+      min_date <- min(individual_data$date)
       max_date <- max(individual_data$date)
-      min_date <- max_date - last_n_days
       
       # filter data based on date range
       individual_data <- individual_data[(individual_data$date > min_date) & (individual_data$date <= max_date), ]
