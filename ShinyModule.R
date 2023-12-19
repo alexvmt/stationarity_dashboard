@@ -1,17 +1,22 @@
+####################
+# setup
+####################
+
+# load packages
 library("shiny")
 library("move2")
 library("sf")
-library(leaflet)
-library(leaflet.extras)
-library(pals)
-library(mapview)
-library(geosphere)
-library(plotly)
-library(DT)
-library(RColorBrewer)
-library(dplyr)
-library(shinybusy)
-library(leafem)
+library("leaflet")
+library("leaflet.extras")
+library("pals")
+library("mapview")
+library("geosphere")
+library("plotly")
+library("DT")
+library("RColorBrewer")
+library("dplyr")
+library("shinybusy")
+library("leafem")
 
 # disable scientific notation
 options(scipen = 999)
@@ -51,17 +56,16 @@ limit_upper_last_n_days_for_data_reduction <- 10
 # set max number of tracks to be shown on map when all individuals are selected
 fixed_track_limit <- 10
 
-# to display messages to the user in the log file of the App in MoveApps
-# one can use the function from the src/common/logger.R file:
-# logger.fatal(), logger.error(), logger.warn(), logger.info(), logger.debug(), logger.trace()
+
+
+####################
+# user interface
+####################
 
 shinyModuleUserInterface <- function(id, label) {
+  
   # all IDs of UI functions need to be wrapped in ns()
   ns <- NS(id)
-  # showcase to access a file ('auxiliary files') that is 
-  # a) provided by the app-developer and 
-  # b) can be overridden by the workflow user.
-  fileName <- paste0(getAppFilePath("yourLocalFileSettingId"), "sample.txt")
   
   # create function to insert linebreaks
   linebreaks <- function(n){HTML(strrep(br(), n))}
@@ -126,10 +130,19 @@ shinyModuleUserInterface <- function(id, label) {
   
 }
 
+
+
+####################
+# server
+####################
+
 # The parameter "data" is reserved for the data object passed on from the previous app
 shinyModule <- function(input, output, session, data) {
+  
   # all IDs of UI functions need to be wrapped in ns()
   ns <- session$ns
+  
+  # make input data reactive so that it can be returned later if unmodified
   current <- reactiveVal(data)
   
   # show app info when about button is clicked
@@ -986,6 +999,8 @@ shinyModule <- function(input, output, session, data) {
     content = function(fname){write.csv(rctv_movement_summary(), file = fname, row.names = FALSE)}
     
   )
+  
+  
   
   # data must be returned. Either the unmodified input data, or the modified data by the app
   return(reactive({ current() }))
