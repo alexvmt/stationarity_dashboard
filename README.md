@@ -11,6 +11,7 @@ a tracker map visualizes animal tracks, including clustering of locations,
 and a zoomable time series plot  shows, for a selected individual, moved distances from one day to another.
 The interface allows to filter for individuals and specific date ranges (such as last day / week / 30 days / 60 days / ... / last year / all time).
 It also allows to dynamically set maximum distance and minimum duration inputs for identifiying stationary individuals.
+This app is the successor of [this](https://github.com/alexvmt/animal-movement-summary-and-stationarity-analysis) one.
 
 ## Documentation
 The app processes a given dataset and fills a dropdown with the given individuals (based on the dataset's respective id column).
