@@ -42,6 +42,9 @@ The default is 24 hours for min. duration while the minimum is 1 hour and the ma
 The tags' usual location error and users' experience can be used to set these inputs.
 Given an individual's known locations,
 it is considered stationary if it has not moved past the set max. distance within the set min. duration from its last known location.
+If the inactivity threshold check box is checked,
+all individuals without a data point between today and today minus the set number of days are automatically marked as stationary.
+If the inactivity threshold check box is not checked, the inactivity threshold numeric input is ignored.
 
 **Automatic data recuction**
 
@@ -126,7 +129,7 @@ This exemplary workflow might be helpful to spot stationary animals or other unu
 move2_loc
 
 ### Output data
-Shiny user interface (UI)
+move2_loc and Shiny user interface (UI)
 
 ### Artefacts
 None
@@ -134,10 +137,13 @@ None
 ### Settings
 No predefined settings needed.
 The app allows to apply two filters - on individuals and date ranges.
-The app also allows to dynamically set maximum distance and minimum duration inputs for the stationarity detection.
+The app also allows to dynamically set maximum distance and minimum duration inputs as well as an inactivity threshold for the stationarity detection.
+`Store settings`: click to store the current settings of the App for future Workflow runs
 
 ### Most common errors
-None known yet.
+- The Shiny Dashboard might crash in MoveApps when a numeric input is first deleted and only then a new value is entered.
+Reload the page to start fresh if that happens.
+To avoid this issue, overwrite numeric inputs directly with new values instead of deleting them or use the input controls.
 
 ### Null or error handling
 Data is taken as is and only processed and aggregated for the visualizations.

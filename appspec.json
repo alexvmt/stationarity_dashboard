@@ -47,15 +47,14 @@
       }
     ]
   },
-  "createsArtifacts": false,
   "providedAppFiles": [],
   "license": {
     "key": "MIT"
   },
   "language": "eng",
   "keywords": [
-    "example",
-    "template"
+    "stationarity",
+    "dashboard"
   ],
   "people": [
     {
