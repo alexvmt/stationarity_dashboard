@@ -17,7 +17,6 @@ library("RColorBrewer")
 library("dplyr")
 library("shinybusy")
 library("leafem")
-
 # disable scientific notation
 options(scipen = 999)
 
@@ -54,6 +53,11 @@ limit_upper_last_n_days_for_data_reduction <- 10
 # set max number of tracks to be shown on map when all individuals are selected
 fixed_track_limit <- 10
 
+# set limits and default for inactivity threshold
+default_inactivity_threshold <- 30
+limit_lower_inactivity_threshold <- 1
+limit_upper_inactivity_threshold <- 99999
+
 
 
 ####################
@@ -71,6 +75,17 @@ shinyModuleUserInterface <- function(id, label) {
   tagList(
     titlePanel("Stationarity Dashboard"),
     tags$style(type = "text/css", ".col-sm-9 {padding: 15px;}"), # prevent graphs from overlapping
+    fluidRow(
+      column(2,
+             actionButton(ns("about_button"),
+                          "Show app info")
+      ),
+      column(2,
+             downloadButton(ns("download_table"),
+                            "Download table")
+      )
+    ),
+    linebreaks(1),
     fluidRow(
       column(2,
              selectInput(ns("dropdown_individual"),
@@ -97,15 +112,17 @@ shinyModuleUserInterface <- function(id, label) {
                           min = limit_lower_min_duration,
                           max = limit_upper_min_duration)
       ),
-      column(2,
-             linebreaks(1),
-             downloadButton(ns("download_table"),
-                            "Download table")
+      column(1,
+             checkboxInput(ns("checkbox_inactivity_threshold"),
+                           "Inactivity threshold",
+                           TRUE)
       ),
       column(2,
-             linebreaks(1),
-             actionButton(ns("about_button"),
-                          "Show app info")
+             numericInput(ns("inactivity_threshold"),
+                          "Inactivity threshold (d):",
+                          default_inactivity_threshold,
+                          min = limit_lower_inactivity_threshold,
+                          max = limit_upper_inactivity_threshold)
       )
     ),
     fluidRow(
@@ -116,7 +133,8 @@ shinyModuleUserInterface <- function(id, label) {
     fluidRow(
       column(7,
              checkboxInput(ns("checkbox_full_map"),
-                           "Limit map to 10 tracks", TRUE),
+                           "Limit map to 10 tracks",
+                           TRUE),
              leafletOutput(ns("map"))
       ),
       column(5,
@@ -161,7 +179,10 @@ shinyModule <- function(input, output, session, data) {
         Only the map and time series plot will be filtered according to the selected individual.</li>
         <li>The max. distance input sets the distance to the last coordinates which an individual has to have moved
         within a given amount of time to not be considered stationary.</li>
-        <li>This given amount of time is set through the min. duration input.</li><br>
+        <li>This given amount of time is set through the min. duration input.</li>
+        <li>If the inactivity threshold check box is checked,
+        all individuals without a data point between today and today minus the set number of days are automatically marked as stationary.</li>
+        <li>If the inactivity threshold check box is not checked, the inactivity threshold numeric input is ignored.</li><br>
         
         <b>Potential workflow:</b><br>
         A potential workflow, after setting the max. distance and min. duration inputs,
@@ -246,6 +267,29 @@ shinyModule <- function(input, output, session, data) {
       )
       
       updateNumericInput(session, "min_duration", value = default_min_duration)
+      
+    }
+    
+  })
+  
+  # ensure that inactivity threshold is within limits
+  observe({
+    
+    if (input$inactivity_threshold > limit_upper_inactivity_threshold || input$inactivity_threshold < limit_lower_inactivity_threshold) {
+      
+      showModal(
+        modalDialog(
+          title = strong("Warning!", style = "font-size:24px; color: red;"),
+          p(paste0("Input value for inactivity threshold exceeds limits (min: ",
+                   limit_lower_inactivity_threshold,
+                   "; max: ",
+                   limit_upper_inactivity_threshold,
+                   "). Reset to default."),
+            style = "font-size:16px"),
+          footer = modalButton("Close"))
+      )
+      
+      updateNumericInput(session, "inactivity_threshold", value = default_inactivity_threshold)
       
     }
     
@@ -512,10 +556,27 @@ shinyModule <- function(input, output, session, data) {
     # get min duration
     min_duration <- as.numeric(input$min_duration)
     
-    # get non-stationary individuals if there are any
-    non_stationary_individuals <- data_processed %>% 
-      filter((difference_hours_last <= min_duration) & (distance_meters_last > max_distance)) %>% 
-      distinct(individuals)
+    if (input$checkbox_inactivity_threshold) {
+      
+      # get inactivity threshold
+      inactivity_threshold <- as.numeric(input$inactivity_threshold)
+      
+      # get non-stationary individuals if there are any
+      non_stationary_individuals <- data_processed %>% 
+        filter((difference_hours_last <= min_duration)
+               & (distance_meters_last > max_distance)) %>% 
+        filter(date >= Sys.Date() - inactivity_threshold) %>% 
+        distinct(individuals)
+      
+    } else {
+      
+      # get non-stationary individuals if there are any
+      non_stationary_individuals <- data_processed %>% 
+        filter((difference_hours_last <= min_duration)
+               & (distance_meters_last > max_distance)) %>% 
+        distinct(individuals)
+      
+    }
     
     # get stationary individuals if there are any
     stationary_individuals <- data_processed %>% 
