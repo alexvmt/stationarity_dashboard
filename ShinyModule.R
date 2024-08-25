@@ -17,7 +17,6 @@ library("RColorBrewer")
 library("dplyr")
 library("shinybusy")
 library("leafem")
-
 # disable scientific notation
 options(scipen = 999)
 
@@ -66,8 +65,6 @@ limit_upper_inactivity_threshold <- 99999
 ####################
 
 shinyModuleUserInterface <- function(id, label) {
-  
-  shinyjs::useShinyjs()
   
   # all IDs of UI functions need to be wrapped in ns()
   ns <- NS(id)
@@ -183,8 +180,9 @@ shinyModule <- function(input, output, session, data) {
         <li>The max. distance input sets the distance to the last coordinates which an individual has to have moved
         within a given amount of time to not be considered stationary.</li>
         <li>This given amount of time is set through the min. duration input.</li>
-        <li>If the inactivity threshold is active,
-        all individuals without a data point between today and today minus the set number of days are automatically marked as stationary.</li><br>
+        <li>If the inactivity threshold check box is checked,
+        all individuals without a data point between today and today minus the set number of days are automatically marked as stationary.</li>
+        <li>If the inactivity threshold check box is not checked, the inactivity threshold numeric input is ignored.</li><br>
         
         <b>Potential workflow:</b><br>
         A potential workflow, after setting the max. distance and min. duration inputs,
